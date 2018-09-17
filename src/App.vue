@@ -12,9 +12,9 @@
         enabled: true,
         perPageDropdown: [10],
       }"/>
-      <modal name="hello-world" height="auto" :scrollable="true">
-      </modal>
-  </div>
+      <modal name="hello-world" height="auto" :scrollable="true" v-on:comic-click="toggleComicModal"></modal>
+      <modal name="comic-characters" height="auto" :scrollable="true"></modal>
+  </div> 
 </template>
 
 <script>
@@ -88,7 +88,7 @@ export default {
             <h3>Comics</h3>
             <img :src=this.data.image>
             <ul>
-              <li v-for="item in this.data.comicsArr">
+              <li v-for="item in this.data.comicsArr" v-on:click="$emit('comic-click', item)">
                 {{ item.name }}
               </li>
             </ul>
@@ -143,7 +143,11 @@ export default {
       });
 
       this.rows = [...this.rows, ...rows];
-    }
+    },
+
+    toggleComicModal: function(e) {
+      console.log(e);
+    },
   }
 };
 </script>
