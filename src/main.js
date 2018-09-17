@@ -1,13 +1,10 @@
 import Vue from 'vue'
 import App from './App.vue'
-import MarvelTable from './components/MarvelTable.vue'
+import VModal from 'vue-js-modal'
 
 new Vue({
   el: '#app',
   render: h => h(App)
 })
 
-new Vue({
-  el: '#marvel-table',
-  render: h => h(MarvelTable)
-})
+Vue.use(VModal, { dynamic: true, injectModalsContainer: true })
