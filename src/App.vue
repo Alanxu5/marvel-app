@@ -12,9 +12,9 @@
         enabled: true,
         perPageDropdown: [10],
       }"/>
-      <modal name="hello-world" height="auto" :scrollable="true" v-on:comic-click="toggleComicModal"></modal>
-      <modal name="comic-characters" height="auto" :scrollable="true"></modal>
-  </div> 
+      <modal name="info-modal" height="auto" :scrollable="true"></modal>
+      <!-- <modal name="comic-modal" height="auto" :scrollable="true"></modal> -->
+  </div>
 </template>
 
 <script>
@@ -58,7 +58,13 @@ export default {
         }
       ],
 
-      rows: []
+      rows: [
+        {
+          name: 'alan',
+          description: 'test',
+          comicsArr: [{name: 'test', id:'123'}, {name: 'test1', id:'234'}],
+        }
+      ]
     };
   },
 
@@ -69,6 +75,9 @@ export default {
 
   created() {
     this.getCharacters(0);
+    this.$root.$on('comic-click', item => {
+      this.openComicModal(item);
+    });
   },
 
   methods: {
@@ -85,10 +94,11 @@ export default {
       this.$modal.show({
         template: `
           <div>
-            <h3>Comics</h3>
+            <h3> {{this.data.name}} </h3>
             <img :src=this.data.image>
+            <h3>Comics featuring {{this.data.name}}</h3>
             <ul>
-              <li v-for="item in this.data.comicsArr" v-on:click="$emit('comic-click', item)">
+              <li v-for="item in this.data.comicsArr" v-on:click="$root.$emit('comic-click', item)">
                 {{ item.name }}
               </li>
             </ul>
@@ -100,7 +110,7 @@ export default {
           data: e.row,
         }, {
           height: 'auto'
-        }
+        },
       );
     },
 
@@ -131,11 +141,12 @@ export default {
 
       response.data.results.forEach(result => {
         let charObj = {};
+        // need to move result.id into the comicsArr
         charObj.id = result.id;
         charObj.comicsArr = result.comics.items;
         charObj.name = result.name;
         charObj.image = `${result.thumbnail.path}/standard_medium.${result.thumbnail.extension}`;
-        charObj.discription = result.description;
+        charObj.description = result.description;
         charObj.comics = result.comics.available;
         charObj.stories = result.stories.available;
         charObj.series = result.series.available;
@@ -145,8 +156,24 @@ export default {
       this.rows = [...this.rows, ...rows];
     },
 
-    toggleComicModal: function(e) {
-      console.log(e);
+    openComicModal: function(item) {
+      console.log(item);
+      // make api call with id
+      this.$modal.hide('info-modal');
+      this.$modal.show({
+        template: `
+          <div>
+            <h3>{{this.data.name}}</h3>
+            <h3>Image?</h3>
+            <h3>Characters in {{this.data.name}}</h3>
+          </div>
+        `,
+          props: ["data"]
+        },
+        {
+          data: item,
+        });
+      // show new modal
     },
   }
 };
