@@ -12,8 +12,7 @@
         enabled: true,
         perPageDropdown: [10],
       }"/>
-      <modal name="info-modal" height="auto" :scrollable="true"></modal>
-      <!-- <modal name="comic-modal" height="auto" :scrollable="true"></modal> -->
+    <modal name="info-modal" height="auto" :scrollable="true"></modal>
   </div>
 </template>
 
@@ -59,11 +58,11 @@ export default {
       ],
 
       rows: [
-        {
-          name: 'alan',
-          description: 'test',
-          comicsArr: [{name: 'test', id:'123'}, {name: 'test1', id:'234'}],
-        }
+        // {
+        //   name: 'alan',
+        //   description: 'test',
+        //   comicsArr: [{name: 'test', id:'123'}, {name: 'test1', id:'234'}],
+        // }
       ]
     };
   },
@@ -78,36 +77,72 @@ export default {
     this.$root.$on('comic-click', item => {
       this.openComicModal(item);
     });
+
+    this.$root.$on('character-click', item => {
+      this.onRowClick(item);
+    });
   },
 
   methods: {
     onPageChange: function(e) {
-      console.log(e);
       if (e.currentPage == e.total) {
         const offset = e.currentPerPage * e.currentPage;
         this.getCharacters(offset);
       }
     },
 
-    onRowClick: function(e) {
+    // when a row in the table is clicked show the modal with character and the comics it is featured in
+    onRowClick: async function(e) {
       console.log(e);
+      const data = {};
+
+      // normalize data
+      if (e.row) {
+        data.id = e.row.id;
+        data.name = e.row.name;
+      } else {
+        data.id = e.id;
+        data.name = e.name;
+      }
+
+      // call api to get comics for particular character and the comic's ids
+      const marvelPublicKey = "244f518b9b870e77c5aa4f0e9d5fa957";
+      let formattedData = [];
+      try {
+        const response = await fetch(
+          `https://gateway.marvel.com:443/v1/public/characters/${data.id}/comics?apikey=${marvelPublicKey}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json"
+            }
+          }
+        );
+        if (response.ok) {
+          const responseJson = await response.json();
+          formattedData = this.formatComicData(responseJson.data.results);
+        }
+      } catch (e) {
+        console.error("Api call failed", e);
+      }
+// <img :src=this.data.image>
       this.$modal.show({
         template: `
           <div>
             <h3> {{this.data.name}} </h3>
-            <img :src=this.data.image>
             <h3>Comics featuring {{this.data.name}}</h3>
             <ul>
-              <li v-for="item in this.data.comicsArr" v-on:click="$root.$emit('comic-click', item)">
-                {{ item.name }}
+              <li v-for="item in comicData" v-on:click="$root.$emit('comic-click', item)">
+                {{ item.title }}
               </li>
             </ul>
           </div>
         `,
-          props: ["data"]
+          props: ["data", "comicData"]
         },
         {
-          data: e.row,
+          data: data,
+          comicData: formattedData,
         }, {
           height: 'auto'
         },
@@ -129,7 +164,6 @@ export default {
         if (response.ok) {
           const responseJson = await response.json();
           this.formatData(responseJson);
-          console.log(responseJson);
         }
       } catch (e) {
         console.error("Api call failed", e);
@@ -156,22 +190,74 @@ export default {
       this.rows = [...this.rows, ...rows];
     },
 
-    openComicModal: function(item) {
+    formatComicData: function(results) {
+      const comicData = [];
+
+      results.forEach(result => {
+        let comicObj = {};
+        comicObj.id = result.id;
+        comicObj.title = result.title;
+        // comicObj.characterName = result.name;
+        // comicObj.image = `${result.thumbnail.path}/standard_medium.${result.thumbnail.extension}`;
+        comicData.push(comicObj);
+      });
+
+      return comicData;
+    },
+
+    formatCharacterData: function(results) {
+      const characterData = [];
+      results.forEach(result => {
+        let characterObj = {};
+        characterObj.id = result.id;
+        characterObj.name = result.name;
+        characterData.push(characterObj);
+      });
+
+      return characterData;
+    },
+
+    openComicModal: async function(item) {
       console.log(item);
-      // make api call with id
+
+      let characterData = [];
+      // make api call with comic id to get characters of that comic
+      const marvelPublicKey = "244f518b9b870e77c5aa4f0e9d5fa957";
+      try {
+        const response = await fetch(
+          `https://gateway.marvel.com:443/v1/public/comics/${item.id}/characters?apikey=${marvelPublicKey}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json"
+            }
+          }
+        );
+        if (response.ok) {
+          const responseJson = await response.json();
+          characterData = this.formatCharacterData(responseJson.data.results);
+        }
+      } catch (e) {
+        console.error("Api call failed", e);
+      }
+
       this.$modal.hide('info-modal');
       this.$modal.show({
         template: `
           <div>
-            <h3>{{this.data.name}}</h3>
-            <h3>Image?</h3>
-            <h3>Characters in {{this.data.name}}</h3>
+            <h3>Characters in {{this.comicData.title}}</h3>
+            <ul>
+              <li v-for="item in characterData" v-on:click="$root.$emit('character-click', item)">
+                {{ item.name }}
+              </li>
+            </ul>
           </div>
         `,
-          props: ["data"]
+          props: ["characterData", "comicData"]
         },
         {
-          data: item,
+          characterData: characterData,
+          comicData: item
         });
       // show new modal
     },
