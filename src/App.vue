@@ -57,13 +57,7 @@ export default {
         }
       ],
 
-      rows: [
-        // {
-        //   name: 'alan',
-        //   description: 'test',
-        //   comicsArr: [{name: 'test', id:'123'}, {name: 'test1', id:'234'}],
-        // }
-      ]
+      rows: []
     };
   },
 
@@ -93,9 +87,7 @@ export default {
 
     // when a row in the table is clicked show the modal with character and the comics it is featured in
     onRowClick: async function(e) {
-      console.log(e);
       const data = {};
-
       // normalize data
       if (e.row) {
         data.id = e.row.id;
@@ -175,7 +167,6 @@ export default {
 
       response.data.results.forEach(result => {
         let charObj = {};
-        // need to move result.id into the comicsArr
         charObj.id = result.id;
         charObj.comicsArr = result.comics.items;
         charObj.name = result.name;
@@ -197,8 +188,6 @@ export default {
         let comicObj = {};
         comicObj.id = result.id;
         comicObj.title = result.title;
-        // comicObj.characterName = result.name;
-        // comicObj.image = `${result.thumbnail.path}/standard_medium.${result.thumbnail.extension}`;
         comicData.push(comicObj);
       });
 
@@ -241,7 +230,6 @@ export default {
         console.error("Api call failed", e);
       }
 
-      this.$modal.hide('info-modal');
       this.$modal.show({
         template: `
           <div>
