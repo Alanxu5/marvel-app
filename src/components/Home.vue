@@ -65,9 +65,6 @@ export default {
 
   created() {
     this.getCharacters(0);
-    this.$root.$on('character-row-click', item => {
-      this.characterRowClick(item);
-    });
   },
 
   methods: {
@@ -76,44 +73,6 @@ export default {
         const offset = e.currentPerPage * e.currentPage;
         this.getCharacters(offset);
       }
-    },
-
-    // when a row in the table is clicked show the modal with character and the comics it is featured in
-    characterRowClick: async function(e) {
-      const data = {};
-      
-      // normalize data
-      if (e.row) {
-        data.id = e.row.id;
-        data.name = e.row.name;
-      } else {
-        data.id = e.id;
-        data.name = e.name;
-      }
-
-      // call api to get comics for particular character and the comic's ids
-      const marvelPublicKey = "244f518b9b870e77c5aa4f0e9d5fa957";
-      let formattedData = [];
-      try {
-        const response = await fetch(
-          `https://gateway.marvel.com:443/v1/public/characters/${data.id}/comics?apikey=${marvelPublicKey}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json"
-            }
-          }
-        );
-        if (response.ok) {
-          const responseJson = await response.json();
-          formattedData = this.formatComicData(responseJson.data.results);
-        }
-      } catch (e) {
-        console.error("Api call failed", e);
-      }
-
-      // go to component that shows the comics the specific character is in
-      this.$router.push('info')
     },
 
     getCharacters: async function(offset) {
@@ -154,6 +113,37 @@ export default {
       });
 
       this.rows = [...this.rows, ...rows];
+    },    
+
+    // when a row in the table is clicked show the modal with character and the comics it is featured in
+    characterRowClick: async function(e) {
+      const data = {};
+      data.id = e.row.id;
+      data.name = e.row.name;
+
+      // call api to get comics for particular character and the comic's ids
+      const marvelPublicKey = "244f518b9b870e77c5aa4f0e9d5fa957";
+      let formattedData = [];
+      try {
+        const response = await fetch(
+          `https://gateway.marvel.com:443/v1/public/characters/${e.row.id}/comics?apikey=${marvelPublicKey}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json"
+            }
+          }
+        );
+        if (response.ok) {
+          const responseJson = await response.json();
+          formattedData = this.formatComicData(responseJson.data.results);
+        }
+      } catch (e) {
+        console.error("Api call failed", e);
+      }
+
+      // go to component that shows the comics the specific character is in
+      this.$router.push({name: 'character', params: { data: data, formattedData: formattedData }});
     },
 
     formatComicData: function(results) {
@@ -168,7 +158,6 @@ export default {
 
       return comicData;
     },      
-
   }
 };
 </script>
