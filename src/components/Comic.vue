@@ -2,11 +2,9 @@
   <div id="comic">
     <router-link to="/">Home</router-link>
       <h3>Characters in {{ this.title }}</h3>
-      <ul>
-        <li v-for="(item, index) in characterData" :key=index v-on:click="getCharacterData(item)">
-          {{ item.name }}
-        </li>
-      </ul>
+      <div class="comic" v-for="(item, index) in characterData" :key=index v-on:click="getCharacterData(item)">
+        {{ item.name }}
+      </div>
   </div>
 </template>
 <script>
@@ -40,7 +38,7 @@ export default {
       }
 
       // go to component that shows the comics the specific character is in
-      this.$router.push({name: 'character', params: { data: item, formattedData: formattedData }});      
+      this.$router.push({name: 'character', params: { data: item, formattedData: formattedData }});
     },
 
     formatComicData: function(results) {
@@ -54,13 +52,13 @@ export default {
       });
 
       return comicData;
-    },      
+    },
   }
 }
 </script>
 
 <style lang="scss">
-  li:hover {
+  .comic:hover {
     cursor: pointer;
   }
 </style>

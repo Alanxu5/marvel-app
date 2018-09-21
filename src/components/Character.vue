@@ -1,14 +1,10 @@
 <template>
   <div id="character">
     <router-link to="/">Home</router-link>
-     <div>
        <h3>Comics featuring {{this.data.name}}</h3>
-       <ul>
-         <li v-for="(item, index) in formattedData" :key=index v-on:click="getCharacterData(item)">
-           {{ item.title }}
-         </li>
-       </ul>
-     </div>
+      <div class="character" v-for="(item, index) in formattedData" :key=index v-on:click="getCharacterData(item)">
+        {{ item.title }}
+      </div>
   </div>
 </template>
 <script>
@@ -62,7 +58,7 @@ export default {
 </script>
 
 <style lang="scss">
-  li:hover {
+  .character:hover {
     cursor: pointer;
   }
-</style>  
+</style>
