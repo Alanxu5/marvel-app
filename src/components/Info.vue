@@ -1,13 +1,12 @@
 <template>
-  <div id="marvel-table">
-    Marvel Table
+  <div id="info">
+    <router-link to="/">Home</router-link>
   </div>
 </template>
-
 <script>
 export default {
-  name: "marvel-table",
-};
+  name: "info",
+}
 </script>
 
 <style lang="scss">
